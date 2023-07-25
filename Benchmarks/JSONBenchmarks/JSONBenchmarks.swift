@@ -18,6 +18,7 @@ let map: Map = .dictionary([
         .null,
     ]),
     "dictionary": .dictionary([
+        "bool": .bool(true),
         "number": .number(1),
         "string": .string("hello world"),
         "null": .null,
@@ -25,23 +26,55 @@ let map: Map = .dictionary([
     ]),
 ])
 
+let data = """
+{
+    "bool": true,
+    "number": 1,
+    "string": "hello world",
+    "null": null,
+    "array": [
+        1,
+        "hello world",
+        null
+    ],
+    "dictionary": {
+        "bool": true,
+        "number": 1,
+        "string": "hello world",
+        "null": null
+    }
+}
+""".data(using: .utf8)!
+
+
 let graphQLJSONEncoder = GraphQLJSONEncoder()
 let foundationJSONEncoder = JSONEncoder()
+let foundationJSONDecoder = JSONDecoder()
 let ikigaJSONEncoder = IkigaJSONEncoder()
+let ikigaJSONDecoder = IkigaJSONDecoder()
 let extrasJSONEncoder = XJSONEncoder()
 
 let benchmarks = {
-    Benchmark("GraphQLJSONEncoder") { benchmark in
+    // Encoders
+    Benchmark("Encoder - GraphQL") { benchmark in
         try blackHole(graphQLJSONEncoder.encode(map))
     }
-    Benchmark("FoundationJSONEncoder") { benchmark in
+    Benchmark("Encoder - Foundation") { benchmark in
         try blackHole(foundationJSONEncoder.encode(map))
     }
-    Benchmark("IkigaJSONEncoder") { benchmark in
+    Benchmark("Encoder - IkigaJSON") { benchmark in
         try blackHole(ikigaJSONEncoder.encode(map))
     }
     // Fails
 //    Benchmark("ExtrasJSONEncoder") { benchmark in
 //        try blackHole(extrasJSONEncoder.encode(map))
 //    }
+    
+    // Decoders
+    Benchmark("Decoder - Foundation") { benchmark in
+        try blackHole(foundationJSONDecoder.decode(Map.self, from: data))
+    }
+    Benchmark("Decoder - IkigaJSON") { benchmark in
+        try blackHole(ikigaJSONDecoder.decode(Map.self, from: data))
+    }
 }
